@@ -12,8 +12,12 @@ function normalizeRepo(repo) {
 }
 
 function normalizeIssueNumber(value) {
-  const parsed = Number.parseInt(String(value), 10);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
+  // Accept only a whole decimal token so malformed input is rejected instead of
+  // silently truncated ("42oops" -> 42) and out-of-range values are rejected
+  // instead of losing precision past Number.MAX_SAFE_INTEGER.
+  const text = String(value).trim();
+  const parsed = Number(text);
+  if (!/^\+?\d+$/.test(text) || !Number.isSafeInteger(parsed) || parsed <= 0) {
     throw new Error(`Invalid issue number: ${value}`);
   }
   return parsed;
